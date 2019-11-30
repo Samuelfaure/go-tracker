@@ -1,7 +1,6 @@
 package tracker
 
 import (
-	"fmt"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"golang.org/x/net/websocket"
@@ -16,8 +15,7 @@ type (
 	}
 )
 
-func Start() {
-	// Goroutine for counting visitors
+func Init() {
 	visitors := 0
 	changes := make(chan int)
 
@@ -60,13 +58,13 @@ func (tc *TrackerContext) StartWebsocket(c echo.Context) {
 		for {
 			err := websocket.Message.Send(ws, "Connection ON")
 			if err != nil {
-				c.Logger().Error(err)
+				break
 			}
 
-			msg := c.Param("msg")
+			msg := c.Param("msg") // TODO replace with a token, break if incorrect
 			err = websocket.Message.Receive(ws, &msg)
 			if err != nil {
-				c.Logger().Error(err)
+				break
 			}
 		}
 	}).ServeHTTP(c.Response(), c.Request())
@@ -76,7 +74,7 @@ func count(visitors *int, changes chan int) {
 	for {
 		change := <-changes
 		*visitors += change
-		fmt.Printf("count: %d", visitors)
+		// TODO: Send to kafka
 	}
 }
 

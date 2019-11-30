@@ -5,8 +5,8 @@ import (
 	"testing"
 )
 
-func TestStart(t *testing.T) {
-	go Start()
+func TestInit(t *testing.T) {
+	go Init()
 	origin := "ws://localhost/"
 	url := "ws://localhost:1323/ws/test"
 	conn, err := websocket.Dial(url, "", origin)
