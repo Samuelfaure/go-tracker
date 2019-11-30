@@ -2,27 +2,63 @@ package tracker
 
 import (
 	"fmt"
-
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"golang.org/x/net/websocket"
 )
 
-func handleOpen() {
-	fmt.Printf("+1\n")
+type (
+	ChannelChanges chan int
+
+	TrackerContext struct {
+		echo.Context
+		ChannelChanges
+	}
+)
+
+func Start() {
+	// Goroutine for counting visitors
+	visitors := 0
+	changes := make(chan int)
+
+	go count(&visitors, changes)
+
+	// Creating server
+	e := echo.New()
+
+	// Middlewares
+	e.Use(func(h echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			tc := &TrackerContext{c, changes}
+			return h(tc)
+		}
+	})
+	e.Use(middleware.Logger())
+	e.Use(middleware.Recover())
+
+	// Routes
+	e.GET("/ws/:msg", func(c echo.Context) error {
+		tc := c.(*TrackerContext)
+		tc.StartWebsocket(c)
+		return tc.String(200, "OK")
+	})
+
+	// Manage closing
+	e.Logger.Fatal(e.Start(":1323"))
 }
 
-func handleClose() {
-	fmt.Printf("-1\n")
-}
+func (tc *TrackerContext) StartWebsocket(c echo.Context) {
+	changes := tc.ChannelChanges
+	handleOpen(changes)
 
-func connected(c echo.Context) error {
 	websocket.Handler(func(ws *websocket.Conn) {
+		// Rules for closing and opening
+		defer handleClose(changes)
 		defer ws.Close()
-		defer handleClose()
 
+		// Websocket
 		for {
-			err := websocket.Message.Send(ws, "Hello, Client!")
+			err := websocket.Message.Send(ws, "Connection ON")
 			if err != nil {
 				c.Logger().Error(err)
 			}
@@ -32,18 +68,22 @@ func connected(c echo.Context) error {
 			if err != nil {
 				c.Logger().Error(err)
 			}
-			handleOpen()
 		}
 	}).ServeHTTP(c.Response(), c.Request())
-
-	return nil
 }
 
-func Start() {
-	e := echo.New()
-	e.Use(middleware.Logger())
-	e.Use(middleware.Recover())
-	e.Static("/", "../public")
-	e.GET("/ws/:msg", connected)
-	e.Logger.Fatal(e.Start(":1323"))
+func count(visitors *int, changes chan int) {
+	for {
+		change := <-changes
+		*visitors += change
+		fmt.Printf("count: %d", visitors)
+	}
+}
+
+func handleOpen(changes chan int) {
+	changes <- 1
+}
+
+func handleClose(changes chan int) {
+	changes <- -1
 }
