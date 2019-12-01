@@ -1,7 +1,6 @@
 package tracker
 
 import (
-	// "fmt"
 	"github.com/Samuelfaure/go-tracker/kafka"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -21,20 +20,24 @@ func Init() {
 	changes := make(chan int)
 
 	go count(changes)
-
 	startServer(changes)
+}
+
+func count(changes chan int) {
+	visitors := 0
+
+	for {
+		change := <-changes
+		visitors += change
+		kafka.SendCount(visitors)
+	}
 }
 
 func startServer(changes ChanChanges) {
 	e := echo.New()
+
 	registerMiddlewares(e, changes)
-
-	e.GET("/ws/:token", func(c echo.Context) error {
-		tc := c.(*TrackerContext)
-		tc.StartWebsocket(c)
-		return tc.String(200, "OK")
-	})
-
+	registerRoutes(e)
 	e.Start(":1323")
 }
 
@@ -48,9 +51,23 @@ func registerMiddlewares(e *echo.Echo, changes ChanChanges) {
 	e.Use(middleware.Recover())
 }
 
-func (tc *TrackerContext) StartWebsocket(c echo.Context) {
+func registerRoutes(e *echo.Echo) {
+	e.GET("/ws/:token", func(c echo.Context) error {
+		tc := c.(*TrackerContext)
+		tc.Track(c)
+		return tc.String(200, "OK")
+	})
+}
+
+func (tc *TrackerContext) Track(c echo.Context) {
 	changes := tc.ChanChanges
-	handleOpen(changes)
+
+	changes <- 1 // Add one visitor
+	startWebsocket(c)
+	changes <- -1 // Remove one visitor
+}
+
+func startWebsocket(c echo.Context) {
 	websocket.Handler(func(ws *websocket.Conn) {
 		defer ws.Close()
 
@@ -65,24 +82,4 @@ func (tc *TrackerContext) StartWebsocket(c echo.Context) {
 			}
 		}
 	}).ServeHTTP(c.Response(), c.Request())
-	handleClose(changes)
-}
-
-func count(changes chan int) {
-	visitors := 0
-
-	for {
-		change := <-changes
-		visitors += change
-		// fmt.Printf("count: %d\n", visitors)
-		kafka.SendCount(visitors)
-	}
-}
-
-func handleOpen(changes chan int) {
-	changes <- 1
-}
-
-func handleClose(changes chan int) {
-	changes <- -1
 }
