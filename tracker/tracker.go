@@ -1,7 +1,8 @@
 package tracker
 
 import (
-	"fmt"
+	// "fmt"
+	"github.com/Samuelfaure/go-tracker/kafka"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"golang.org/x/net/websocket"
@@ -20,6 +21,7 @@ func Init() {
 	changes := make(chan int)
 
 	go count(changes)
+
 	startServer(changes)
 }
 
@@ -72,8 +74,8 @@ func count(changes chan int) {
 	for {
 		change := <-changes
 		visitors += change
-		fmt.Printf("count: %d\n", visitors)
-		// TODO: Send to kafka
+		// fmt.Printf("count: %d\n", visitors)
+		kafka.SendCount(visitors)
 	}
 }
 
