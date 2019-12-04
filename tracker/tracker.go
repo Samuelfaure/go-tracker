@@ -1,7 +1,9 @@
+// Package tracker creates a websocket server
+// and sends total amount of connections to a messenger module
 package tracker
 
 import (
-	"github.com/Samuelfaure/go-tracker/kafka"
+	"github.com/Samuelfaure/go-tracker/messenger"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"golang.org/x/net/websocket"
@@ -10,35 +12,39 @@ import (
 type (
 	ChanChanges chan int
 
+	Server struct {
+		Port string
+	}
+
 	TrackerContext struct {
 		echo.Context
 		ChanChanges
 	}
 )
 
-func Init() {
+func Init(s Server, k messenger.KafkaServer) {
 	changes := make(chan int)
 
-	go count(changes)
-	startServer(changes)
+	go count(k, changes)
+	startServer(s, changes)
 }
 
-func count(changes chan int) {
+func count(k messenger.KafkaServer, changes chan int) {
 	visitors := 0
 
 	for {
 		change := <-changes
 		visitors += change
-		kafka.SendCount(visitors)
+		messenger.SendValue(k, visitors)
 	}
 }
 
-func startServer(changes ChanChanges) {
+func startServer(s Server, changes ChanChanges) {
 	e := echo.New()
 
 	registerMiddlewares(e, changes)
 	registerRoutes(e)
-	e.Start(":1323")
+	e.Start(s.Port)
 }
 
 func registerMiddlewares(e *echo.Echo, changes ChanChanges) {
