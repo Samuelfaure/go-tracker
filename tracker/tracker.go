@@ -22,20 +22,20 @@ type (
 	}
 )
 
-func Init(s Server, k messenger.KafkaServer) {
+func Init(s Server, m messenger.Server) {
 	changes := make(chan int)
 
-	go count(k, changes)
+	go count(m, changes)
 	startServer(s, changes)
 }
 
-func count(k messenger.KafkaServer, changes chan int) {
+func count(m messenger.Server, changes chan int) {
 	visitors := 0
 
 	for {
 		change := <-changes
 		visitors += change
-		messenger.SendValue(k, visitors)
+		messenger.SendValue(m, visitors)
 	}
 }
 

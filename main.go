@@ -5,8 +5,8 @@ import "github.com/Samuelfaure/go-tracker/messenger"
 
 func main() {
 
-	trackerServer := tracker.Server{":1323"}
-	kafkaServer := messenger.KafkaServer{"tcp", "localhost:9092", "visitors", 0}
+	t := tracker.Server{":1323"}
+	m := messenger.Server{"tcp", "localhost:9092", "visitors", 0}
 
-	tracker.Init(trackerServer, kafkaServer)
+	tracker.Init(t, m)
 }
