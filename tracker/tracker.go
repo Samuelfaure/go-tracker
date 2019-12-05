@@ -82,7 +82,7 @@ func startWebsocket(c echo.Context) {
 				break
 			}
 
-			token := c.Param("token") // TODO decrypt / check token
+			token := c.Param("token") // TODO: decrypt / check token
 			if err := websocket.Message.Receive(ws, &token); err != nil {
 				break
 			}

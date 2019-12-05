@@ -14,7 +14,7 @@ This data does NOT constitute PII (Personally Identifiable Information). Therefo
 
 ## Install
 
-### Install and start Kafka
+### Install Kafka
 
 ```bash
 # With yay package manager
@@ -22,14 +22,14 @@ sudo yay kafka
 
 # Or on Debian, Ubuntu and such
 sudo apt-get install kafka
-
-# Start the kafka service
-sudo systemctl start kafka.service
 ```
 
 ### Setup and open Kafka
 
 ```bash
+# Start the kafka service
+sudo systemctl start kafka.service
+
 # Go to this folder
 cd go-tracker
 
@@ -56,4 +56,4 @@ You done !
 - Write the JS client
 - Increase test coverage
 - Add config options for remote communication & test deployment
-- Add token system so we only log from trusted sources
+- Add encrypted token system so we only log from trusted sources
