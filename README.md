@@ -53,6 +53,7 @@ You done !
 
 ## TODO
 
+- Reduce coupling by injection `messenger` dependency into `tracker`
 - Write the JS client
 - Increase test coverage
 - Add config options for remote communication & test deployment
