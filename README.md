@@ -51,9 +51,10 @@ You can configure the messenger module and the tracker port in `main.go` (TODO: 
 Import the `tracker_client.js` file on your website's metadata.
 You done !
 
-## TODO
+## TODO (Most to least important)
 
-- Increase test coverage (priority)
+- Solve goroutine memory leak
+- Increase test coverage
 - Write the JS client
 - Create a config file to take configuration out of `main.go`
 - Add encrypted token system so we only log from trusted sources
