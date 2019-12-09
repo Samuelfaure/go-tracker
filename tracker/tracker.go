@@ -3,7 +3,6 @@
 package tracker
 
 import (
-	"github.com/Samuelfaure/go-tracker/messenger"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"golang.org/x/net/websocket"
@@ -12,39 +11,44 @@ import (
 type (
 	ChanChanges chan int
 
-	Server struct {
-		Port string
-	}
-
 	TrackerContext struct {
 		echo.Context
 		ChanChanges
 	}
+
+	TrackerServer struct {
+		Port      string
+		Messenger Messengerer
+	}
+
+	Messengerer interface {
+		SendValue(value int)
+	}
 )
 
-func Init(s Server, m messenger.Server) {
+func Init(t TrackerServer) {
 	changes := make(chan int)
 
-	go count(m, changes)
-	startServer(s, changes)
+	go count(t, changes)
+	startServer(t, changes)
 }
 
-func count(m messenger.Server, changes chan int) {
+func count(t TrackerServer, changes chan int) {
 	visitors := 0
 
 	for {
 		change := <-changes
 		visitors += change
-		messenger.SendValue(m, visitors)
+		t.Messenger.SendValue(visitors)
 	}
 }
 
-func startServer(s Server, changes ChanChanges) {
+func startServer(t TrackerServer, changes ChanChanges) {
 	e := echo.New()
 
 	registerMiddlewares(e, changes)
 	registerRoutes(e)
-	e.Start(s.Port)
+	e.Start(t.Port)
 }
 
 func registerMiddlewares(e *echo.Echo, changes ChanChanges) {

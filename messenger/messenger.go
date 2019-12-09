@@ -9,15 +9,25 @@ import (
 	"time"
 )
 
-type Server struct {
-	Protocol, Url, Topic string
+type Messenger struct {
+	Config
+}
+
+type Config struct {
+	Protocol, URL, Topic string
 	Partition            int
 }
 
-func SendValue(s Server, value int) {
+func (m Messenger) SendValue(value int) {
 	msg := strconv.Itoa(value)
 
-	conn, err := kafka.DialLeader(context.Background(), s.Protocol, s.Url, s.Topic, s.Partition)
+	conn, err := kafka.DialLeader(
+		context.Background(),
+		m.Config.Protocol,
+		m.Config.URL,
+		m.Config.Topic,
+		m.Config.Partition)
+
 	if err != nil {
 		log.Print(err)
 		return

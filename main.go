@@ -5,8 +5,15 @@ import "github.com/Samuelfaure/go-tracker/messenger"
 
 func main() {
 
-	t := tracker.Server{":1323"}
-	m := messenger.Server{"tcp", "localhost:9092", "visitors", 0}
+	c := messenger.Config{
+		Protocol:  "tcp",
+		URL:       "localhost:9092",
+		Topic:     "visitors",
+		Partition: 0}
 
-	tracker.Init(t, m)
+	m := messenger.Messenger{Config: c}
+
+	t := tracker.TrackerServer{Port: ":1323", Messenger: m}
+
+	tracker.Init(t)
 }
