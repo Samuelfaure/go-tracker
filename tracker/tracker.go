@@ -11,18 +11,20 @@ import (
 type (
 	ChanChanges chan int
 
+	// Using Messenger interface for injection dependency
+	TrackerServer struct {
+		Port      string
+		Messenger Messenger
+	}
+
+	Messenger interface {
+		SendValue(value int)
+	}
+
+	// Custom context for Echo
 	TrackerContext struct {
 		echo.Context
 		ChanChanges
-	}
-
-	TrackerServer struct {
-		Port      string
-		Messenger Messengerer
-	}
-
-	Messengerer interface {
-		SendValue(value int)
 	}
 )
 

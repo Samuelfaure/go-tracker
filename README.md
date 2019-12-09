@@ -17,12 +17,11 @@ This data does NOT constitute PII (Personally Identifiable Information). Therefo
 ### Install Kafka
 
 ```bash
-# With yay package manager
+# Simple local install with yay package manager (Arch)
 sudo yay kafka
-
-# Or on Debian, Ubuntu and such
-sudo apt-get install kafka
 ```
+
+For other distributions or for a production environment, refer to [Kafka documentation](https://kafka.apache.org/documentation/)
 
 ### Setup and open Kafka
 
@@ -33,7 +32,7 @@ sudo systemctl start kafka.service
 # Go to this folder
 cd go-tracker
 
-# Setup kafka topic
+# Setup kafka topic (only once)
 sh scripts/create_kafka_topic.sh
 
 # Start the kafka console consumer
@@ -44,7 +43,8 @@ Kafka is now open, ready to receive information.
 
 ### Install go-tracker
 
-Run the `go-tracker` binary on your favorite server (TODO: write config)
+Run the `go-tracker` binary on your favorite server.
+You can configure the messenger module and the tracker port in `main.go` (TODO: Create a separate config file)
 
 ### Install the client on your websites
 
@@ -53,8 +53,7 @@ You done !
 
 ## TODO
 
-- Reduce coupling by injecting `messenger` dependency into `tracker`
+- Increase test coverage (priority)
 - Write the JS client
-- Increase test coverage
-- Add config options for remote communication & test deployment
+- Create a config file to take configuration out of `main.go`
 - Add encrypted token system so we only log from trusted sources
