@@ -53,8 +53,7 @@ You done !
 
 ## TODO (Most to least important)
 
-- Solve goroutine memory leak
-- Increase test coverage
+- Test messenger.go package
 - Write the JS client
 - Create a config file to take configuration out of `main.go`
 - Add encrypted token system so we only log from trusted sources

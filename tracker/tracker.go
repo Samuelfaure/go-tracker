@@ -3,54 +3,66 @@
 package tracker
 
 import (
+	"context"
+	"fmt"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"golang.org/x/net/websocket"
+	"os"
+	"time"
 )
 
-type (
-	ChanChanges chan int
+type ChanChanges chan int
 
-	// Using Messenger interface for injection dependency
-	TrackerServer struct {
-		Port      string
-		Messenger Messenger
-	}
+type ChanQuit chan os.Signal
 
-	Messenger interface {
-		SendValue(value int)
-	}
+// Using Messenger interface for injection dependency
+type TrackerServer struct {
+	Port      string
+	Messenger Messenger
+}
 
-	// Custom context for Echo
-	TrackerContext struct {
-		echo.Context
-		ChanChanges
-	}
-)
+type Messenger interface {
+	SendValue(value int)
+}
 
-func Init(t TrackerServer) {
+// Custom context for Echo
+type TrackerContext struct {
+	echo.Context
+	ChanChanges
+}
+
+func Init(t TrackerServer, quit ChanQuit) {
 	changes := make(chan int)
 
 	go count(t, changes)
-	startServer(t, changes)
+	startServer(t, changes, quit)
 }
 
-func count(t TrackerServer, changes chan int) {
+func count(t TrackerServer, changes ChanChanges) {
 	visitors := 0
 
 	for {
-		change := <-changes
+		change, ok := <-changes
+
+		if !ok {
+			break
+		}
+
 		visitors += change
 		t.Messenger.SendValue(visitors)
 	}
 }
 
-func startServer(t TrackerServer, changes ChanChanges) {
+func startServer(t TrackerServer, changes ChanChanges, quit ChanQuit) {
 	e := echo.New()
 
 	registerMiddlewares(e, changes)
 	registerRoutes(e)
-	e.Start(t.Port)
+
+	go e.Start(t.Port)
+
+	handleClose(e, changes, quit)
 }
 
 func registerMiddlewares(e *echo.Echo, changes ChanChanges) {
@@ -94,4 +106,19 @@ func startWebsocket(c echo.Context) {
 			}
 		}
 	}).ServeHTTP(c.Response(), c.Request())
+}
+
+func handleClose(e *echo.Echo, changes ChanChanges, quit ChanQuit) {
+	<-quit
+
+	// Close count goroutine
+	close(changes)
+
+	// Close the server gracefully with 10 sec timeout
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if err := e.Shutdown(ctx); err != nil {
+		e.Logger.Fatal(err)
+	}
+	fmt.Println("\nEcho server exited gracefully.")
 }
