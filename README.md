@@ -55,8 +55,8 @@ You done !
 
 ## TODO (Most to least important)
 
-- Test package messenger.go
 - Write the JS client
 - Improve tests on package tracker.go
+- Configure CI
 - Create a config file to take configuration out of `main.go`
 - Add encrypted token system so we only log from trusted sources
