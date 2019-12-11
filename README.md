@@ -1,3 +1,5 @@
+[![Maintainability](https://api.codeclimate.com/v1/badges/1d28621ae116181bb1ce/maintainability)](https://codeclimate.com/github/Samuelfaure/go-tracker/maintainability)
+
 # Go-tracker
 
 Smol project to learn Golang and Kafka.
