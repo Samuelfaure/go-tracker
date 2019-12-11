@@ -96,10 +96,6 @@ func startWebsocket(c echo.Context) {
 		defer ws.Close()
 
 		for {
-			if err := websocket.Message.Send(ws, "Connection ON"); err != nil {
-				break
-			}
-
 			token := c.Param("token") // TODO: decrypt / check token
 			if err := websocket.Message.Receive(ws, &token); err != nil {
 				break
