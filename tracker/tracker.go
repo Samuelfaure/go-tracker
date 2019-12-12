@@ -16,7 +16,6 @@ type ChanChanges chan int
 
 type ChanQuit chan os.Signal
 
-// Using Messenger interface for injection dependency
 type TrackerServer struct {
 	Port      string
 	Messenger Messenger

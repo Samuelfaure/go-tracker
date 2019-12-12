@@ -55,7 +55,7 @@ You done !
 
 ## TODO (Most to least important)
 
-- Write the JS client
+- Switch from ws to wss
 - Improve tests on package tracker.go
 - Configure CI
 - Create a config file to take configuration out of `main.go`
