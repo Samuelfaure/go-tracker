@@ -6,5 +6,5 @@ require (
 	github.com/labstack/echo/v4 v4.1.11
 	github.com/segmentio/kafka-go v0.3.4
 	github.com/stretchr/testify v1.4.0
-	golang.org/x/net v0.0.0-20191126235420-ef20fe5d7933
+	golang.org/x/net v0.7.0
 )
